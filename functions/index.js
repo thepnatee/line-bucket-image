@@ -44,35 +44,7 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
             return;
         }
 
-
-        /* 🔥 3. Event Message is ['image', 'audio', 'video', 'file'] 🔥
-       https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
-        }*/
-        const validateEventType = ['image', 'audio', 'video', 'file']
-        if (event.type === "message" && validateEventType.includes(event.message.type)) {
-
-            /* ✅ 3.1 Get Content By API  
-            https://developers.line.biz/en/reference/messaging-api/#get-content
-            */
-            const binary = await line.getContent(event.message.id)
-
-
-            /* ✅ 3.2 Upload Firebase Storage Bucket -> Convert binary  to Medie file  */
-            const publicUrl = await firebase.saveImageToStorage(event.message, event.source.groupId, binary)
-
-
-            /* ✅ 3.3 Insert Object to Firestore  */
-            await firebase.insertImageGroup(event.source.groupId, event.message.id, publicUrl)
-
-            /* ✅ 3.4 Reply View album  */
-            await line.reply(event.replyToken, [messages.text(publicUrl)])
-
-            return;
-        }
-
-
-
-        /* 🔥 4. Leave From Chat Group 🔥
+         /* 🔥 3. Leave From Chat Group 🔥
         https://developers.line.biz/en/reference/messaging-api/#leave-event
         */
         if (event.type === "leave") {
@@ -81,6 +53,30 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
         }
 
 
+        /* 🔥 4. Event Message is ['image', 'audio', 'video', 'file'] 🔥
+       https://developers.line.biz/en/reference/messaging-api/#webhook-event-objects
+        }*/
+        const validateEventType = ['image', 'audio', 'video', 'file']
+        if (event.type === "message" && validateEventType.includes(event.message.type)) {
+
+            /* ✅ 4.1 Get Content By API  
+            https://developers.line.biz/en/reference/messaging-api/#get-content
+            */
+            const binary = await line.getContent(event.message.id)
+
+
+            /* ✅ 4.2 Upload Firebase Storage Bucket -> Convert binary  to Medie file  */
+            const publicUrl = await firebase.saveImageToStorage(event.message, event.source.groupId, binary)
+
+
+            /* ✅ 4.3 Insert Object to Firestore  */
+            await firebase.insertImageGroup(event.source.groupId, event.message.id, publicUrl)
+
+            /* ✅ 4.4 Reply View Image  */
+            await line.reply(event.replyToken, [messages.text(publicUrl)])
+
+            return;
+        }
     }
 
     return res.send(req.method);
