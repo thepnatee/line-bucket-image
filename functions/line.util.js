@@ -17,11 +17,19 @@ const LINE_DATA_HEADER = {
 };
 
 
-exports.getContent = async (messageId) => {
+exports.getContent = async (message) => {
+
+
+  let url = `${LINE_DATA_MESSAGING_API}/message/${message.id}/content`
+
+  if (message.contentProvider.type === 'external') {
+    url = message.contentProvider.originalContentUrl;
+  }
+
   const response = await axios({
     method: 'get',
     headers: LINE_DATA_HEADER,
-    url: `${LINE_DATA_MESSAGING_API}/message/${messageId}/content`,
+    url: url,
     responseType: 'arraybuffer',
   });
   return response

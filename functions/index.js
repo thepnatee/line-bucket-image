@@ -27,7 +27,7 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
         */
         if (event.type === "join") {
             await line.reply(event.replyToken, [messages.welcomeMessage()])
-            return;
+            return res.end();
         }
 
 
@@ -41,7 +41,7 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
                     await line.reply(event.replyToken, [messages.memberJoinedMessage(profile.data.displayName, event.source.groupId)])
                 }
             }
-            return;
+            return res.end();
         }
 
          /* 🔥 3. Leave From Chat Group 🔥
@@ -62,9 +62,9 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
             /* ✅ 4.1 Get Content By API  
             https://developers.line.biz/en/reference/messaging-api/#get-content
             */
-            const binary = await line.getContent(event.message.id)
+            const binary = await line.getContent(event.message)
 
-
+            
             /* ✅ 4.2 Upload Firebase Storage Bucket -> Convert binary  to Medie file  */
             const publicUrl = await firebase.saveImageToStorage(event.message, event.source.groupId, binary)
 
@@ -75,7 +75,7 @@ exports.webhook = functions.region("asia-northeast1").https.onRequest(async (req
             /* ✅ 4.4 Reply View Image  */
             await line.reply(event.replyToken, [messages.text(publicUrl)])
 
-            return;
+            return res.end();
         }
     }
 
